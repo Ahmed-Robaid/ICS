@@ -51,7 +51,7 @@ int main(void) {
     pthread_t process_thread;
     
     int opt = TRUE;  
-    int master_socket, new_socket, client_socket[30], max_clients = 30, activity, i, sd;  
+    int master_socket, addrlen, new_socket, client_socket[30], max_clients = 30, activity, i, sd;
     int max_sd;  
     struct sockaddr_in address;  
     fd_set readfds;  

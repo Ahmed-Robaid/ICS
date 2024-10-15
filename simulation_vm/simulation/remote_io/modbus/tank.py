@@ -55,7 +55,14 @@ def updating_writer(a):
     s = a[1]
     # import pdb; pdb.set_trace()
     s.sendall(b'{"request":"read"}')
-    data = json.loads(s.recv(1500).decode('utf-8'))
+    jdata = s.recv(1500).decode('utf-8')
+    try:
+        data = json.loads(jdata)
+        print(data)
+    except json.JSONDecodeError:
+        print("Failed to decode JSON response")
+        return
+    #data = json.loads(s.recv(1500).decode('utf-8'))
     pressure = int(data["outputs"]["pressure"]/3200.0*65535)
     level = int(data["outputs"]["liquid_level"]/100.0*65535)
     if pressure > 65535:
@@ -99,8 +106,12 @@ def run_update_server():
     HOST = '127.0.0.1'
     PORT = 55555
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((HOST, PORT))
-    # ----------------------------------------------------------------------- #
+    try:
+        sock.connect((HOST, PORT))
+        log.info(f"Connected to simulation at {HOST}:{PORT}")
+    except socket.error as e:
+        log.error(f"Failed to connect to simulation: {e}")
+        return    # ----------------------------------------------------------------------- #
     # run the server you want
     # ----------------------------------------------------------------------- #
     time = 1  # 5 seconds delay
