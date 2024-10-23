@@ -19,13 +19,13 @@ import json
 # --------------------------------------------------------------------------- #
 # import the modbus libraries we need
 # --------------------------------------------------------------------------- #
-from pymodbus.server.asynchronous import StartTcpServer
+from pymodbus.server.async_io import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusServerContext, ModbusSlaveContext
-from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
+#from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 import random
-from pymodbus.version import version
+from pymodbus import __version__ as version
 
 # --------------------------------------------------------------------------- #
 # import the twisted libraries we need
@@ -55,14 +55,7 @@ def updating_writer(a):
     s = a[1]
     # import pdb; pdb.set_trace()
     s.sendall(b'{"request":"read"}')
-    jdata = s.recv(1500).decode('utf-8')
-    try:
-        data = json.loads(jdata)
-        print(data)
-    except json.JSONDecodeError:
-        print("Failed to decode JSON response")
-        return
-    #data = json.loads(s.recv(1500).decode('utf-8'))
+    data = json.loads(s.recv(1500).decode('utf-8'))
     pressure = int(data["outputs"]["pressure"]/3200.0*65535)
     level = int(data["outputs"]["liquid_level"]/100.0*65535)
     if pressure > 65535:
@@ -106,18 +99,13 @@ def run_update_server():
     HOST = '127.0.0.1'
     PORT = 55555
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        sock.connect((HOST, PORT))
-        log.info(f"Connected to simulation at {HOST}:{PORT}")
-    except socket.error as e:
-        log.error(f"Failed to connect to simulation: {e}")
-        return    # ----------------------------------------------------------------------- #
+    sock.connect((HOST, PORT))
     # run the server you want
     # ----------------------------------------------------------------------- #
     time = 1  # 5 seconds delay
     loop = LoopingCall(f=updating_writer, a=(context,sock))
     loop.start(time, now=False)  # initially delay by time
-    StartTcpServer(context, identity=identity, address=("192.168.95.14", 502))
+    StartTcpServer(context=context, identity=identity, address=("192.168.95.14", 502))
 
 
 if __name__ == "__main__":
