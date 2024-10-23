@@ -45,39 +45,32 @@ log.setLevel(logging.DEBUG)
 
 def updating_writer(a):
     print('updating')
-    context  = a[0]
-    readfunction = 0x03 # read holding registers
+    context = a[0]
+    readfunction = 0x03  # read holding registers
     writefunction = 0x10
-    slave_id = 0x01 # slave address
+    slave_id = 0x01  # slave address
     count = 50
     s = a[1]
     # import pdb; pdb.set_trace()
-    s.sendall(b'{"request":"read"}')
-    jdata = s.recv(1500).decode('utf-8')
-    try:
-        data = json.loads(jdata)
-        print(data)
-    except json.JSONDecodeError:
-        print("Failed to decode JSON response")
-        return
-    #data = json.loads(s.recv(1500).decode('utf-8'))
-    a_in_purge = int(data["outputs"]["A_in_purge"]*65535)
-    b_in_purge = int(data["outputs"]["B_in_purge"]*65535)
-    c_in_purge = int(data["outputs"]["C_in_purge"]*65535)
-    #print(data)
+    s.send(b'{"request":"read"}')
+    data = json.loads(s.recv(1500).decode('utf-8'))
+    a_in_purge = int(data["outputs"]["A_in_purge"] * 65535)
+    b_in_purge = int(data["outputs"]["B_in_purge"] * 65535)
+    c_in_purge = int(data["outputs"]["C_in_purge"] * 65535)
+    print(data)
 
     # import pdb; pdb.set_trace()
-    context[slave_id].setValues(4, 1, [a_in_purge,b_in_purge,c_in_purge])
+    context[slave_id].setValues(4, 1, [a_in_purge, b_in_purge, c_in_purge])
     values = context[slave_id].getValues(readfunction, 0, 2)
     log.debug("Values from datastore: " + str(values))
+
+
 
 
 def run_update_server():
     # ----------------------------------------------------------------------- #
     # initialize your data store
     # ----------------------------------------------------------------------- #
-
-
     store = ModbusSlaveContext(
         di=ModbusSequentialDataBlock(0, list(range(1, 101))),
         co=ModbusSequentialDataBlock(0, list(range(101, 201))),
