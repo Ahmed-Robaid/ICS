@@ -54,11 +54,11 @@ def updating_writer(a):
 
     current_command = context[slave_id].getValues(16, 1, 1)[0] / 65535.0 *100.0
 
-    s.sendall(('{"request":"write","data":{"inputs":{"f2_valve_sp":' + repr(current_command) + '}}}\n').encode('utf-8'))
+    s.sendall(('{"request":"write","data":{"inputs":{"f2_valve_sp":' + repr(current_command) + '}}}\n').encode())
 
     # import pdb; pdb.set_trace()
     #s.send('{"request":"read"}')
-    data = json.loads(s.recv(1500).decode('utf-8'))
+    data = json.loads(s.recv(1500).decode())
     valve_pos = int(data["state"]["f2_valve_pos"]/100.0*65535)
     flow = int(data["outputs"]["f2_flow"]/500.0*65535)
     print(data)
@@ -99,7 +99,7 @@ def run_update_server():
     identity.VendorUrl = 'http://github.com/bashwork/pymodbus/'
     identity.ProductName = 'pymodbus Server'
     identity.ModelName = 'pymodbus Server'
-    identity.MajorMinorRevision = '1.0'
+    identity.MajorMinorRevision = version.short()
 
     # connect to simulation
     HOST = '127.0.0.1'
